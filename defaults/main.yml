@@ -13,6 +13,8 @@ autossh_default_dest_server: "127.0.0.1"
 
 autossh_default_bind_address: "127.0.0.1"
 
+autossh_default_sshd_port: "22"
+
 autossh_default_identity_file: "/root/.ssh/id_rsa"
 
 autossh_connections:

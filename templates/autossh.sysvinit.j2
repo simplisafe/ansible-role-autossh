@@ -22,7 +22,7 @@ start() {
         echo -n $"Starting $prog: "
         export AUTOSSH_PIDFILE="$PIDFILE"
 	daemon --pidfile="$PIDFILE" {{ autossh_path }} \
-             -f -M 0 -N -v -o "\"ServerAliveInterval 60\"" -o "\"ServerAliveCountMax 3\"" \
+             -f -M 0 -N -v -o "\"ServerAliveInterval 60\"" -o "\"ServerAliveCountMax 3\"" -p {{ item.sshd_port | default(autossh_default_sshd_port) }} \
              -L {{ item.bind_address | default(autossh_default_bind_address) }}:{{ item.local_port }}:{{ item.dest_server | default(autossh_default_dest_server) }}:{{ item.dest_port }} \
              -i {{ item.identity_file | default(autossh_default_identity_file) }} \
              {{ item.user }}@{{ item.server }}
