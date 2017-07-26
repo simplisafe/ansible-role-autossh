@@ -8,7 +8,19 @@
 - name: Ensure known hosts file exists.
   copy: content="" dest={{ autossh_known_hosts_file }} force=no
 
-- name: Scan for public key of destination server.
-  shell: ssh-keyscan -t {{ item.server_key_type | default(autossh_default_server_key_type) }} {{ item.server }} >> {{ autossh_known_hosts_file }}
-  changed_when: false
+- name: Check public key in known_hosts"
+  command: grep -q "^{{item.server}}" "{{ autossh_known_hosts_file }}"
+  register: check_public_key
   with_items: "{{ autossh_connections }}"
+  check_mode: False # replaces deprecated 'always_run: True'
+  ignore_errors: True
+  changed_when: False
+
+# only run if server entry doesn't already exist - use with_index_items
+# see: https://docs.ansible.com/ansible/latest/playbooks_loops.html#looping-over-a-list-with-an-index
+# see: https://docs.ansible.com/ansible/latest/playbooks_loops.html#using-register-with-a-loop
+- name: Scan for public key of destination server.
+  shell: ssh-keyscan -t {{ item.1.server_key_type | default(autossh_default_server_key_type) }} {{ item.1.server }} >> {{ autossh_known_hosts_file }}
+  changed_when: false
+  with_indexed_items: "{{ autossh_connections }}"
+  when: check_public_key.results[item.0].rc != 0
